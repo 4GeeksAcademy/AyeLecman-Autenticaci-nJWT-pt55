@@ -1,32 +1,27 @@
+# src/api/routes.py
 """
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
+API endpoints
 """
-from flask import Flask, request, jsonify, url_for, Blueprint
+from flask import Blueprint, request, jsonify, current_app
 from api.models import db, User
-from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
-from flask_jwt_extended import create_access_token, jwt_required, JWTManager, get_jwt_identity
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 
 api = Blueprint('api', __name__)
-
-# Allow CORS requests to this API
-CORS(api)
+CORS(api)  # opcional si ya tienes CORS a nivel app
 
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
-
-    response_body = {
+    return jsonify({
         "message": "Hello! I'm a message that came from the backend, check the network tab on the google inspector and you will see the GET request"
-    }
+    }), 200
 
-    return jsonify(response_body), 200
 
 @api.route('/user', methods=['GET'])
 def get_users():
     all_users = User.query.all()
-    results = list(map(lambda user: user.serialize(), all_users))
-
+    results = [user.serialize() for user in all_users]
     return jsonify(results), 200
 
 
@@ -35,47 +30,81 @@ def get_user(user_id):
     user = User.query.filter_by(id=user_id).first()
     if not user:
         return jsonify({"msg": "user not found"}), 404
-    
     return jsonify(user.serialize()), 200
+
 
 @api.route('/signup', methods=['POST'])
 def signup():
-    body = request.get_json(silent=True) or {}
-    email = body.get('email')
-    password = body.get('password')
+    try:
+        body = request.get_json(force=True) or {}
+        print("pasó el body", body)
+        required_fields = ["firstname", "lastname",
+                           "username", "email", "password"]
+        for field in required_fields:
+            if not body.get(field):
+                return jsonify({"error": f"el campo '{field}' es requerido y no puede estar vacío"}), 400
 
-    if not email or not password:
-        return jsonify({"msg": "email or password required"}), 400
+        email = body["email"].strip().lower()
 
-    if User.query.filter_by(email=email).first():
-        return jsonify({"msg": "email already exists"}), 409
+        # prevenir duplicados (case-insensitive)
+        if User.query.filter(db.func.lower(User.email) == email).first():
+            return jsonify({"error": "email ya registrado"}), 409
 
-    user = User(email=email, password=password)
-    db.session.add(user)
-    db.session.commit()
+        # # generar hash con la instancia de bcrypt inicializada en app.py
+        # pw_hash = current_app.extensions['bcrypt'].generate_password_hash(
+        #     body["password"]
+        # ).decode("utf-8")
 
-    return jsonify({"msg": "user created"}), 201
+        # print("pasó el hash", pw_hash)
+
+        new_user = User(
+            email=email,
+            # guarda el HASH en la columna (no texto plano)
+            password=body["password"],
+            username=body["username"],
+            firstname=body["firstname"],
+            lastname=body["lastname"]
+        )
+
+        print("pasó user", new_user)
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        return jsonify({"msg": "usuario creado"}), 201
+
+    except Exception as e:
+        # podés loguearlo si querés: current_app.logger.exception(e)
+        return jsonify({"error": "Ocurrió un error al procesar la solicitud"}), 500
+
 
 @api.route("/login", methods=["POST"])
 def login():
     body = request.get_json(silent=True) or {}
-    email = body.get('email')
-    password = body.get('password')
+    email = (body.get('email') or "").strip().lower()
+    password = body.get('password') or ""
     if not email or not password:
         return jsonify({"msg": "email or password required"}), 400
-    
-    user = User.query.filter_by(email=email).first()
+
+    user = User.query.filter(db.func.lower(User.email) == email).first()
+    if not user:
+        return jsonify({"msg": "invalid email or password"}), 401
+
+    # verificar hash con bcrypt de la app
+    # bcrypt_ok = current_app.extensions['bcrypt'].check_password_hash(
+    #     user.password, password)
+    # if not bcrypt_ok:
+    #     return jsonify({"msg": "invalid email or password"}), 401
 
     if not user or user.password != password:
         return jsonify({"msg": "invalid email or password"}), 401
 
     token = create_access_token(identity=user.id)
-
     return jsonify(access_token=token, user_id=user.id), 200
+
 
 @api.route("/protected", methods=["GET"])
 @jwt_required()
 def protected():
-    # Access the identity of the current user with get_jwt_identity
     uid = get_jwt_identity()
     return jsonify(ok=True, user_id=uid, message="Accediste a /protected"), 200
