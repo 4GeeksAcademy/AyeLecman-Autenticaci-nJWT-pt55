@@ -10,14 +10,6 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 api = Blueprint('api', __name__)
 CORS(api)  # opcional si ya tienes CORS a nivel app
 
-
-@api.route('/hello', methods=['POST', 'GET'])
-def handle_hello():
-    return jsonify({
-        "message": "Hello! I'm a message that came from the backend, check the network tab on the google inspector and you will see the GET request"
-    }), 200
-
-
 @api.route('/user', methods=['GET'])
 def get_users():
     all_users = User.query.all()
@@ -37,7 +29,6 @@ def get_user(user_id):
 def signup():
     try:
         body = request.get_json(force=True) or {}
-        print("pasó el body", body)
         required_fields = ["firstname", "lastname",
                            "username", "email", "password"]
         for field in required_fields:
@@ -55,8 +46,6 @@ def signup():
         #     body["password"]
         # ).decode("utf-8")
 
-        # print("pasó el hash", pw_hash)
-
         new_user = User(
             email=email,
             # guarda el HASH en la columna (no texto plano)
@@ -66,15 +55,12 @@ def signup():
             lastname=body["lastname"]
         )
 
-        print("pasó user", new_user)
-
         db.session.add(new_user)
         db.session.commit()
 
         return jsonify({"msg": "usuario creado"}), 201
 
     except Exception as e:
-        # podés loguearlo si querés: current_app.logger.exception(e)
         return jsonify({"error": "Ocurrió un error al procesar la solicitud"}), 500
 
 

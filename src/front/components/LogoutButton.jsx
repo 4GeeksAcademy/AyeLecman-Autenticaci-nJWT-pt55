@@ -11,7 +11,7 @@ export const LogoutButton = ({ className = "btn btn-outline-danger" }) => {
   };
 
   return (
-    <button type="button" className={className} onClick={handleLogout}>
+    <button type="button" className={className} onClick={handleLogout} style={{ border: "none" }}>
       Cerrar sesión
     </button>
   );

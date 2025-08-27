@@ -20,7 +20,7 @@ export const Home = () => {
     setErrMsg(""); setOkMsg("");
 
     if (!API) { setErrMsg("VITE_BACKEND_URL no está definido."); return; }
-    if (!email || !password) { setErrMsg("Completá email y contraseña."); return; }
+    if (!email || !password) { setErrMsg("Complete email and password"); return; }
 
     setLoading(true);
 
@@ -37,7 +37,7 @@ export const Home = () => {
       )
       .then(({ ok, data }) => {
         if (!ok) {
-          throw new Error(data?.msg || data?.error || "Credenciales inválidas");
+          throw new Error(data?.msg || data?.error || "not valid credentials");
         }
         // guardar token
         localStorage.setItem("token", data.access_token);
@@ -48,16 +48,16 @@ export const Home = () => {
 
         // 🔽 redirigir a /single
         // (ruta estática)
-        navigate("/single");
+        navigate("/private");
 
       })
-      .catch((err) => setErrMsg(err.message || "Error inesperado"))
+      .catch((err) => setErrMsg(err.message || "unexpected error"))
       .finally(() => setLoading(false));
   };
 
   return (
     <div className="container mt-5">
-      <h2>Iniciar sesión</h2>
+      <h1 className="mb-5">Sign in here!</h1>
 
       <form className="mt-3" onSubmit={handleSubmit}>
         <div className="mb-3 row">
@@ -67,7 +67,7 @@ export const Home = () => {
               id="email"
               type="email"
               className="form-control"
-              placeholder="tu@email.com"
+              placeholder="your@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
@@ -105,38 +105,20 @@ export const Home = () => {
         {errMsg && <div className="alert alert-danger py-2">{errMsg}</div>}
         {okMsg && <div className="alert alert-success py-2">{okMsg}</div>}
 
-        <div className="d-flex gap-2">
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? "Ingresando..." : "Ingresar"}
+        <div className="d-flex gap-2 mt-5 justify-content-center">
+          <button type="submit" className="btn btn-success" disabled={loading}>
+            {loading ? "Entering..." : "Sign in"}
           </button>
-          <Link to="/" className="btn btn-outline-secondary">Cancelar</Link>
-          <Link to="/demo" className="btn btn-link">Crear cuenta</Link>
+          <Link to="/" className="btn btn-outline-secondary">Cancel</Link>
+
         </div>
       </form>
 
-      <LogoutButton className="btn btn-sm btn-outline-danger ms-2" />
+      <div className="d-flex gap-2 mt-5 justify-content-end">
+        <Link to="/signup" className="btn btn-sm btn-outline-warning mt-3" style={{ border: "none" }}>Create User</Link>
+        <LogoutButton className="btn btn-sm btn-outline-danger mt-3" />
+      </div>
 
-      {/* Botón opcional para probar /api/protected con el token guardado */}
-      {/* 
-      <button
-        className="btn btn-outline-info mt-3"
-        onClick={() => {
-          const t = localStorage.getItem("token");
-          if (!t) { setErrMsg("No hay token guardado."); return; }
-          fetch(`${API}/api/protected`, {
-            headers: { Authorization: `Bearer ${t}` }
-          })
-            .then((r) => r.json().catch(() => ({})).then((d) => ({ ok: r.ok, d })))
-            .then(({ ok, d }) => {
-              if (!ok) throw new Error(d?.msg || "401");
-              alert("OK /protected → " + JSON.stringify(d));
-            })
-            .catch((e) => alert("Error: " + e.message));
-        }}
-      >
-        Probar /api/protected
-      </button>
-      */}
     </div>
   );
 };

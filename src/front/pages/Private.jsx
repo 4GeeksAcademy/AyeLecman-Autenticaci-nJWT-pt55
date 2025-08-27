@@ -6,7 +6,7 @@ import helloGif from "../assets/gatito.gif";
 import { LogoutButton } from "../components/LogoutButton";
 
 // Define and export the Single component which displays individual item details.
-export const Single = () => {
+export const Private = () => {
   const API = import.meta.env.VITE_BACKEND_URL;
   const [name, setName] = useState("");
 
@@ -28,7 +28,7 @@ export const Single = () => {
   return (
     <div className="text-center mt-5">
       <h1>¡HOLA {name || "AMIGO"}!</h1>
-      <div className="d-flex justify-content-center mt-3">
+      <div className="d-flex justify-content-center mt-5">
         <img
           src={helloGif}
           alt="saludo animado"
@@ -36,7 +36,8 @@ export const Single = () => {
           style={{ maxWidth: 260, height: "auto" }}
         />
       </div>
-      <LogoutButton className="btn btn-sm btn-outline-danger ms-2" />
+      <LogoutButton className="btn btn-sm btn-outline-danger mt-5" />
     </div>
   );
 };
+

@@ -3,7 +3,7 @@ import useGlobalReducer from "../hooks/useGlobalReducer";  // Custom hook for ac
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
-export const Demo = () => {
+export const SignUp = () => {
   // Access the global state and dispatch function using the useGlobalReducer hook.
   const API = import.meta.env.VITE_BACKEND_URL; // ej: http://127.0.0.1:3001
 
@@ -76,10 +76,10 @@ export const Demo = () => {
 
   return (
     <div className="container mt-5">
-      <h2>Crear usuario</h2>
+      <h2 className="mb-5">Create User</h2>
       <form className="mt-3" onSubmit={handleSubmit}>
         <div className="mb-3 row">
-          <label htmlFor="firstname" className="col-sm-2 col-form-label">Nombre</label>
+          <label htmlFor="firstname" className="col-sm-2 col-form-label">Name</label>
           <div className="col-sm-10">
             <input id="firstname" name="firstname" type="text" className="form-control"
               value={form.firstname} onChange={onChange} required />
@@ -87,7 +87,7 @@ export const Demo = () => {
         </div>
 
         <div className="mb-3 row">
-          <label htmlFor="lastname" className="col-sm-2 col-form-label">Apellido</label>
+          <label htmlFor="lastname" className="col-sm-2 col-form-label">Lastname</label>
           <div className="col-sm-10">
             <input id="lastname" name="lastname" type="text" className="form-control"
               value={form.lastname} onChange={onChange} required />
@@ -127,14 +127,14 @@ export const Demo = () => {
               />
               <button type="button" className="btn btn-outline-secondary"
                 onClick={() => setShowPwd(v => !v)}>
-                {showPwd ? "Ocultar" : "Mostrar"}
+                {showPwd ? "Hide" : "Show"}
               </button>
             </div>
           </div>
         </div>
 
         <div className="mb-3 row">
-          <label htmlFor="confirm" className="col-sm-2 col-form-label">Confirmar</label>
+          <label htmlFor="confirm" className="col-sm-2 col-form-label">Confirm</label>
           <div className="col-sm-10">
             <div className="input-group">
               <input
@@ -142,7 +142,7 @@ export const Demo = () => {
                 name="confirm"
                 type={showConfirm ? "text" : "password"}
                 className="form-control"
-                placeholder="Repetí la contraseña"
+                placeholder="Repeat password"
                 value={form.confirm}
                 onChange={onChange}
                 autoComplete="new-password"
@@ -150,7 +150,7 @@ export const Demo = () => {
               />
               <button type="button" className="btn btn-outline-secondary"
                 onClick={() => setShowConfirm(v => !v)}>
-                {showConfirm ? "Ocultar" : "Mostrar"}
+                {showConfirm ? "Hide" : "Show"}
               </button>
             </div>
           </div>
@@ -159,14 +159,18 @@ export const Demo = () => {
         {errMsg && <div className="alert alert-danger py-2">{errMsg}</div>}
         {okMsg && <div className="alert alert-success py-2">{okMsg}</div>}
 
-        <div className="d-flex gap-2">
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? "Creando..." : "Crear usuario"}
+        <div className="d-flex gap-2 mt-5 justify-content-center">
+          <button type="submit" className="btn btn-success" disabled={loading}>
+            {loading ? "Creating..." : "Create User"}
           </button>
-          <Link to="/" className="btn btn-outline-secondary">Cancelar</Link>
-          <Link to="/" className="btn btn-link">Ir a iniciar sesión</Link>
+          <Link to="/" className="btn btn-outline-secondary">Cancel</Link>
+
         </div>
       </form>
+
+      <div className="d-flex justify-content-end mt-5">
+        <Link to="/" className="btn btn-link">Go back and sign in!</Link>
+      </div>
     </div>
   );
 };
