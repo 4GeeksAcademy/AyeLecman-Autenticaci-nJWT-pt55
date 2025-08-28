@@ -1,13 +1,15 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-export const LogoutButton = ({ className = "btn btn-outline-danger" }) => {
+export const LogoutButton = ({ className = "btn btn-outline-danger", onLogout }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user_id");
-    navigate("/"); // o "/" si preferís
+    localStorage.removeItem("user_name");
+    navigate("/", { replace: true }); 
+    if (onLogout) onLogout();
   };
 
   return (

@@ -2,7 +2,8 @@
 """
 API endpoints
 """
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, Flask
+from flask_bcrypt import Bcrypt
 from api.models import db, User
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
@@ -15,7 +16,6 @@ def get_users():
     all_users = User.query.all()
     results = [user.serialize() for user in all_users]
     return jsonify(results), 200
-
 
 @api.route('/user/<int:user_id>', methods=['GET'])
 def get_user(user_id):
@@ -37,14 +37,8 @@ def signup():
 
         email = body["email"].strip().lower()
 
-        # prevenir duplicados (case-insensitive)
         if User.query.filter(db.func.lower(User.email) == email).first():
             return jsonify({"error": "email ya registrado"}), 409
-
-        # # generar hash con la instancia de bcrypt inicializada en app.py
-        # pw_hash = current_app.extensions['bcrypt'].generate_password_hash(
-        #     body["password"]
-        # ).decode("utf-8")
 
         new_user = User(
             email=email,
@@ -63,7 +57,6 @@ def signup():
     except Exception as e:
         return jsonify({"error": "Ocurrió un error al procesar la solicitud"}), 500
 
-
 @api.route("/login", methods=["POST"])
 def login():
     body = request.get_json(silent=True) or {}
@@ -76,21 +69,17 @@ def login():
     if not user:
         return jsonify({"msg": "invalid email or password"}), 401
 
-    # verificar hash con bcrypt de la app
-    # bcrypt_ok = current_app.extensions['bcrypt'].check_password_hash(
-    #     user.password, password)
-    # if not bcrypt_ok:
-    #     return jsonify({"msg": "invalid email or password"}), 401
-
     if not user or user.password != password:
         return jsonify({"msg": "invalid email or password"}), 401
 
     token = create_access_token(identity=user.id)
-    return jsonify(access_token=token, user_id=user.id), 200
+    return jsonify(
+        access_token=token, 
+        user_id=user.id, 
+        user={
+        "firstname": user.firstname,
+        "username": user.username,
+        "email": user.email
+    }), 200
 
 
-@api.route("/protected", methods=["GET"])
-@jwt_required()
-def protected():
-    uid = get_jwt_identity()
-    return jsonify(ok=True, user_id=uid, message="Accediste a /protected"), 200

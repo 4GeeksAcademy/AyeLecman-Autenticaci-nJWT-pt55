@@ -169,7 +169,7 @@ export const SignUp = () => {
       </form>
 
       <div className="d-flex justify-content-end mt-5">
-        <Link to="/" className="btn btn-link">Go back and sign in!</Link>
+        <Link to="/" className="btn btn-sm btn-outline-primary" style={{ border: "none" }}>Go back and sign in!</Link>
       </div>
     </div>
   );
