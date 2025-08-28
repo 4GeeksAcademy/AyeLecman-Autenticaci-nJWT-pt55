@@ -7,6 +7,7 @@ from flask_bcrypt import Bcrypt
 from api.models import db, User
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+import hashlib
 
 api = Blueprint('api', __name__)
 CORS(api)  # opcional si ya tienes CORS a nivel app
@@ -40,10 +41,12 @@ def signup():
         if User.query.filter(db.func.lower(User.email) == email).first():
             return jsonify({"error": "email ya registrado"}), 409
 
+        # password_hash = hash(body["password"])
+        password_hash = hashlib.sha224(body["password"].encode("utf-8")).hexdigest()
+
         new_user = User(
             email=email,
-            # guarda el HASH en la columna (no texto plano)
-            password=body["password"],
+            password=password_hash,
             username=body["username"],
             firstname=body["firstname"],
             lastname=body["lastname"]
@@ -69,7 +72,8 @@ def login():
     if not user:
         return jsonify({"msg": "invalid email or password"}), 401
 
-    if not user or user.password != password:
+    input_hash = hashlib.sha224(password.encode("utf-8")).hexdigest()
+    if not user or user.password != input_hash:
         return jsonify({"msg": "invalid email or password"}), 401
 
     token = create_access_token(identity=user.id)

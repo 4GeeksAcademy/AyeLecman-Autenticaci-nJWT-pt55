@@ -32,7 +32,7 @@ export const LoginForm = () => {
             .then((resp) =>
                 resp
                     .json()
-                    .catch(() => ({})) // por si la respuesta de error no trae JSON
+                    .catch(() => ({})) 
                     .then((data) => ({ ok: resp.ok, data }))
             )
             .then(({ ok, data }) => {
@@ -47,11 +47,6 @@ export const LoginForm = () => {
                     localStorage.setItem("user_name", name);
                 }
                 setOkMsg("Sesión iniciada correctamente.");
-                // (opcional) redirigir a /demo:
-                // navigate("/demo");
-
-                // 🔽 redirigir a /single
-                // (ruta estática)
                 navigate("/private");
 
             })
